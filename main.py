@@ -2,8 +2,9 @@
 # Chloe can edit
 
 import numpy as np
-import initialize
 
+import initialize
+import MC
 
 
 
@@ -17,28 +18,10 @@ import initialize
     # Accept step if ratio > random [0,1]
     # If accepted, compute necessary information: pressure, temperature, etc. g(r), SSF, etc.
 
-class Parameters():
-
-    dimensions = 2
-    NParticles = 22
-    particleDiameter = 1.0
-    latticeType="SC"
-    latticeLength=20
-
-
-
 if ( __name__ == "__main__" ):
 
-    coords = initialize.initParticles( Parameters.NParticles, Parameters.latticeType, Parameters.dimensions, Parameters.latticeLength )
-
-
-
-
-
-
-
-
-
+    coords = initialize.initParticles()
+    MC.runMC( coords )
 
 
 
