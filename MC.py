@@ -1,8 +1,9 @@
 import numpy as np
 import random
-import Parameters
 
+import Parameters
 from Writer import writeCoords
+from Potential import getProb
 
 def getGlobals():
     global dimensions, NSteps, stepSize
@@ -11,16 +12,16 @@ def getGlobals():
     stepSize = Parameters.Parameters.stepSize
 
     # Initialize Output Files
-    global geomFile
+    global geomFile, rawFile
     geomFile = open("dynamics.xyz","w")
+    rawFile = open("dynamics.raw","w")
 
 
-def getStep( coordsOLD, step, POLD ):
+def getStep( coordsOLD, Lmin, Lmax, step, POLD ):
 
     # If first step, get initial probability    
     if ( step == 0 ):
-        POLD = 1 #getProb(coords)
-
+        POLD = getProb(coordsOLD, Lmin, Lmax)
 
     # STEP 1
     # Get uniform random numbers for each particle in each dimension
@@ -31,22 +32,25 @@ def getStep( coordsOLD, step, POLD ):
     for n in range( len(coordsNEW) ): # Loop over particles
         for d in range( dimensions ):
             if ( random.random() < 0.5 ):
-                coordsNEW[n,d] += stepSize
+                coordsNEW[n,d+1] += stepSize * random.random() # Here I am implenting non-uniform step size
             else:
-                coordsNEW[n,d] -= stepSize
+                coordsNEW[n,d+1] -= stepSize * random.random()
 
     # STEP 2
     # Compute probability ratio of current and next step
 
-    PNEW = 1 #getProb(coords)
+    PNEW = getProb(coordsNEW, Lmin, Lmax)
     ratio = PNEW / POLD
 
+    """
+    # Use for debugging if encountering nan or inf.
     if ( np.isnan(ratio) ):
         print ("\t'ratio' is nan.  Killing.\n")
         exit()
     elif( np.isinf(ratio) ):
         print ("\t'ratio' is inf.  Killing.\n")
         exit()
+    """
 
     # STEP 3
     # Check to see if we accept new step based on ratio of probabilities
@@ -54,11 +58,12 @@ def getStep( coordsOLD, step, POLD ):
     if ( random.random() < ratio ):
         return coordsNEW, PNEW
     else:
+        print ("SKIPPED.")
         return coordsOLD, POLD
 
 
 
-def runMC( coords ):
+def runMC( coords, Lmin, Lmax ):
     """
     This runs the Monte Carlo propagation.
     """
@@ -71,10 +76,8 @@ def runMC( coords ):
 
     for step in range(NSteps):
         print ("Step:", step)
-        coords, Prob = getStep( coords, step, Prob )
-        writeCoords(step,coords,geomFile)
-
-    
+        writeCoords(step,coords,geomFile,rawFile)
+        coords, Prob = getStep( coords, Lmin, Lmax, step, Prob )  
 
     return None
 
