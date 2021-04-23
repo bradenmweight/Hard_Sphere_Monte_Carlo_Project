@@ -1,17 +1,23 @@
 import numpy as np
 
-def writeCoords(step, coords, geomFile):
+import Parameters
+
+def writeCoords(step, coords, geomFile, rawFile):
+    
+    # Write XYZ format
+    dimensions = Parameters.Parameters.dimensions
     geomFile.write( str(len(coords)) + "\n")
     geomFile.write( "Step: " + str(step) + "\n" )
+    
     for n in range(len(coords)):
-        outArray = np.array( [1.0, coords[n,0], coords[n,1], coords[n,2] ] )
+        outArray = np.array( [ coords[n,j] for j in range(len(coords[0])) ] )
         geomFile.write( "\t".join(map(str,np.round(outArray,5))) + "\n" )
-    #geomFile.write( "\n" )
-
-
-
-
-
+    
+    # For radial distribution function, write out raw data
+    for n in range(len(coords)):
+        
+        outArray = np.array( [ coords[n,j] for j in range(len(coords[0])) ] )
+        rawFile.write( "\t".join(map(str,np.round(outArray,5))) + "\n" )
 
 
 
