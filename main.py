@@ -29,7 +29,7 @@ class Parameters():
 
 if ( __name__ == "__main__" ):
 
-    initialize.initParticles( Parameters.NParticles, Parameters.latticeType, Parameters.dimensions, Parameters.latticeLength )
+    coords = initialize.initParticles( Parameters.NParticles, Parameters.latticeType, Parameters.dimensions, Parameters.latticeLength )
 
 
 
