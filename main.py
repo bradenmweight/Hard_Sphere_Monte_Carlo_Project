@@ -2,6 +2,7 @@
 # Chloe can edit
 
 import numpy as np
+import initialize
 
 
 
@@ -16,22 +17,24 @@ import numpy as np
     # Accept step if ratio > random [0,1]
     # If accepted, compute necessary information: pressure, temperature, etc. g(r), SSF, etc.
 
-def initParticles( NParticles=10, latticeType="SC", latticeConst=1.0 ):
+class Parameters():
 
-    # For now, choose to initialize particles in simple cubic lattice. Add other options later.
-    
-    # Simple Cubic Lattice
-    a = latticeConst
-    coords = np.array()
-
-    return None
-
+    dimensions = 2
+    NParticles = 22
+    particleDiameter = 1.0
+    latticeType="SC"
+    latticeLength=20
 
 
 
 if ( __name__ == "__main__" ):
 
-    initParticles()
+    initialize.initParticles( Parameters.NParticles, Parameters.latticeType, Parameters.dimensions, Parameters.latticeLength )
+
+
+
+
+
 
 
 
