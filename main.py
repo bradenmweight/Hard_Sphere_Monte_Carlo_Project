@@ -18,10 +18,20 @@ import MC
     # Accept step if ratio > random [0,1]
     # If accepted, compute necessary information: pressure, temperature, etc. g(r), SSF, etc.
 
+# ANALYSIS
+#   1. Radial Distrution Function   --> radial_dist.dat
+#   2. Static Structure Factor      --> 
+#   3. Compute timme-correlation    --> 
+#   4. SSF --> Phase Diagram via Hansen and Verlet freezing criterion (height of first peaj in SSF)
+
+# POSSIBLE FUTURE IMPROVEMENTS
+#   1. Implement periodic boundary conditions: boundaryType = "Fixed", "PBC"
+#   2. Implement different initial lattices: lattiveType = "SC", "FCC", "BCC", "Diamond"
+#   3. Additional potential types: Lennard-Jones (6-12)
+#   4. Implement 1-Dimensional code
+
 if ( __name__ == "__main__" ):
 
-    coords = initialize.initParticles()
-    MC.runMC( coords )
-
-
+    coords, Lmin, Lmax  = initialize.initParticles()
+    MC.runMC( coords, Lmin, Lmax )
 
