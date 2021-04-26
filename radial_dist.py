@@ -23,9 +23,9 @@ def getRDFHist( coords, Lmin, Lmax, NBINS ):
     dr = BINS[1] - BINS[0]
     dim = Parameters.Parameters.dimensions
     n = len(coords) / Parameters.Parameters.latticeLength ** ( 2 * ( dim == 2 ) + 3 * ( dim == 3 ) )
-    for b in range(NBINS):
-        Adr = 4 * np.pi * BINS[b] ** 2 * dr * ( dim == 3 ) +  2 * np.pi * BINS[b] * dr * ( dim == 2 )
-        HIST[b] = HIST[b] / len(coords) / Adr
+    for b in range(NBINS-1):
+        Adr = 4 * np.pi * BINS[b+1] ** 2 * dr * ( dim == 3 ) +  2 * np.pi * BINS[b+1] * dr * ( dim == 2 )
+        HIST[b] = HIST[b] / n / Adr
 
     return np.array( [BINS, HIST] )
 
