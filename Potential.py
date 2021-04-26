@@ -19,7 +19,7 @@ def getV( coords, Lmin, Lmax ):
             dR = np.array([ coords[n,d+1] - coords[m,d+1] for d in range(dimensions) ])
             r = np.linalg.norm( dR )
             if ( r < Diam ):
-                V += r ** 8
+                V += 10**8
 
     if ( Parameters.Parameters.boundaryType == "Fixed" ):
         # Fixed boundary walls
@@ -28,14 +28,14 @@ def getV( coords, Lmin, Lmax ):
             dR = np.array([ coords[n,d+1] - Lmin[d] for d in range(dimensions) ])
             r = np.linalg.norm( dR )
             if ( r < Parameters.Parameters.particleDiameter / 2 or dR.any() < 0 ):
-                V += r ** 8
+                V += 10**8
                 print ("WALL BOTTOM")
             # Top
             dR = np.array([ Lmax[d] - coords[n,d+1] for d in range(dimensions) ])
             r = np.linalg.norm( dR )
             if ( r < Parameters.Parameters.particleDiameter / 2 or dR.any() < 0 ):
                 print ("WALL TOP")
-                V += r ** 8
+                V += 10**8
             
     return V
 
