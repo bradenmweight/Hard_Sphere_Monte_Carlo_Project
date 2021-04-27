@@ -10,6 +10,9 @@ diameter = 0.1
 # walls, particle interactions
 
 def getProb(pos):
+    """
+    THIS MODULE IS DEPRECATED.
+    """
     E = np.ones(N) #energy doesnt change over time so one energy per particle
     for i in range(N-1):
         if ( abs(np.sqrt((pos[i,0])**2+(pos[i,1])**2+(pos[i,2])**2)-np.sqrt((pos[i+1,0])**2+(pos[i+1,1])**2+(pos[i+1,2])**2)) < diameter ):
