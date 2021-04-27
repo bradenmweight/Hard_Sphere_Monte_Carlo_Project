@@ -5,6 +5,7 @@ import numpy as np
 
 import initialize
 import MC
+import Parameters
 
 
 
@@ -21,8 +22,8 @@ import MC
 # ANALYSIS
 #   1. Radial Distrution Function   --> radial_dist.dat
 #   2. Static Structure Factor      --> 
-#   3. Compute timme-correlation    --> 
-#   4. SSF --> Phase Diagram via Hansen and Verlet freezing criterion (height of first peaj in SSF)
+#   3. Compute time-correlation    --> 
+#   4. SSF --> Phase Diagram via Hansen and Verlet freezing criterion (height of first peak in SSF)
 
 # POSSIBLE FUTURE IMPROVEMENTS
 #   1. Implement periodic boundary conditions: boundaryType = "Fixed", "PBC"
@@ -32,6 +33,11 @@ import MC
 
 if ( __name__ == "__main__" ):
 
+    # Initialize the particles
     coords, Lmin, Lmax  = initialize.initParticles()
-    MC.runMC( coords, Lmin, Lmax )
+    #MC.runMC( coords, Lmin, Lmax ) # This runs as follows: (I) Move all particles randomly (II) Compute probability
+    MC.runMCSingleParticleVersion( coords, Lmin, Lmax )  # This runs as follows: (I) Move a single particle randomly (II) Compute probability
+
+
+
 
