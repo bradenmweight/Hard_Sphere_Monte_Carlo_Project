@@ -15,7 +15,8 @@ def getRDFHist( coords, Lmin, Lmax, NBINS, boundaryType ):
     for i in range( len(coords) ):
         for j in range( i+1, len(coords) ):
             if ( boundaryType == "PBC" ):
-                dR = np.array([ coords[i,d+1] % (Lmax[d]-Lmin[d]) - coords[j,d+1] % (Lmax[d]-Lmin[d]) for d in range(dimensions) ])
+                #dR = np.array([ coords[i,d+1] % (Lmax[d]-Lmin[d]) - coords[j,d+1] % (Lmax[d]-Lmin[d]) for d in range(dimensions) ])
+                dR = np.array([ (Lmax[d]-Lmin[d])%(coords[i,d+1] - coords[j,d+1]) for d in range(dimensions) ])
             else:
                 dR = np.array([ coords[i,d+1] - coords[j,d+1] for d in range(dimensions) ])
             r = np.linalg.norm( dR )
