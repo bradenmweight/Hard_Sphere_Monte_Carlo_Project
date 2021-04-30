@@ -27,7 +27,7 @@ def getRDFHist( coords, Lmin, Lmax, NBINS, boundaryType ):
     dr = BINS[1] - BINS[0]
     dim = Parameters.Parameters.dimensions
     L = Lmax[0]-Lmin[0]
-    n = len(coords) / L ** ( 2 * ( dim == 2 ) + 3 * ( dim == 3 ) )
+    #n = len(coords) / L ** ( 2 * ( dim == 2 ) + 3 * ( dim == 3 ) )
     for b in range(1,NBINS):
         Adr = 4 * np.pi * BINS[b] ** 2 * dr * ( dim == 3 ) +  2 * np.pi * BINS[b] * dr * ( dim == 2 )
         HIST[b] = HIST[b] / Adr
@@ -64,6 +64,9 @@ if ( __name__ == "__main__" ):
     np.savetxt("RDF.dat",HIST.T )
 
     Npts = 4096
-    SSF = np.abs( np.fft.fft( np.append(HIST[1,:-1],np.zeros(( Npts - len(HIST[1,:-1]) ))),norm="ortho") )
+    #SSF = np.abs( np.fft.fft( np.append(HIST[1,:-1],np.zeros(( Npts - len(HIST[1,:-1]) ))),norm="ortho") )
+    SSF = np.abs( np.fft.fft(HIST[1,:-1], Npts, norm="ortho") )
     q = np.fft.fftfreq( Npts ) * 2 * np.pi / (BINS[1]-BINS[0])
     np.savetxt("SSF.dat", np.array([q,SSF]).T )
+    
+    
