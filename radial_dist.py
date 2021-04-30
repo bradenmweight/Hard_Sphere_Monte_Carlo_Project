@@ -9,14 +9,24 @@ def getRDFHist( coords, Lmin, Lmax, NBINS, boundaryType ):
     """
     diameter = Parameters.Parameters.particleDiameter
     boundaryType = Parameters.Parameters.boundaryType
-
+    
+    L = Lmax[0]-Lmin[0]
+    
     BINS = np.linspace( 0,(Lmax[0]-Lmin[0])/2,NBINS ) # I have assumed cubic box
     HIST = np.zeros(( NBINS ))
     for i in range( len(coords) ):
         for j in range( i+1, len(coords) ):
             if ( boundaryType == "PBC" ):
                 #dR = np.array([ coords[i,d+1] % (Lmax[d]-Lmin[d]) - coords[j,d+1] % (Lmax[d]-Lmin[d]) for d in range(dimensions) ])
-                dR = np.array([ (Lmax[d]-Lmin[d])%(coords[i,d+1] - coords[j,d+1]) for d in range(dimensions) ])
+                dR = np.zeros(dimensions)
+                for d in range(dimensions):
+                    diff = (coords[i,d+1] - coords[j,d+1])
+                    if diff > L/2:
+                        dR[d] = L - diff
+                    elif diff <= -L/2:
+                        dR[d] = L + diff
+                    else: 
+                        dR[d] = diff
             else:
                 dR = np.array([ coords[i,d+1] - coords[j,d+1] for d in range(dimensions) ])
             r = np.linalg.norm( dR )
@@ -27,7 +37,7 @@ def getRDFHist( coords, Lmin, Lmax, NBINS, boundaryType ):
     # Normalize histogram by spherical shell*dr
     dr = BINS[1] - BINS[0]
     dim = Parameters.Parameters.dimensions
-    L = Lmax[0]-Lmin[0]
+
     #n = len(coords) / L ** ( 2 * ( dim == 2 ) + 3 * ( dim == 3 ) )
     for b in range(1,NBINS):
         Adr = 4 * np.pi * BINS[b] ** 2 * dr * ( dim == 3 ) +  2 * np.pi * BINS[b] * dr * ( dim == 2 )
