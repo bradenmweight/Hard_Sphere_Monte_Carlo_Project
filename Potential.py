@@ -43,7 +43,15 @@ def getV( coords, Lmin, Lmax ):
             for m in range( n+1, len(coords) ):
                 if ( boundaryType == "PBC" ):
                     #dR = np.array([ coords[m,d+1] % (Lmax[d]-Lmin[d]) - coords[n,d+1] % (Lmax[d]-Lmin[d]) for d in range(dimensions) ])
-                    dR = np.array([ min((Lmax[d]-Lmin[d])-(coords[m,d+1] - coords[n,d+1]),(coords[m,d+1] - coords[n,d+1])) for d in range(dimensions) ])
+                    dR = np.zeros(dimensions)
+                    for d in range(dimensions):
+                        diff = (coords[m,d+1] - coords[n,d+1])
+                        if diff > L/2:
+                            dR[d] = L - diff
+                        elif diff <= -L/2:
+                            dR[d] = L + diff
+                        else: 
+                            dR[d] = diff
                 else:
                     dR = np.array([ coords[n,d+1] - coords[m,d+1] for d in range(dimensions) ])
                 r = np.linalg.norm( dR )
@@ -58,7 +66,16 @@ def getV( coords, Lmin, Lmax ):
         for n in range( len(coords) ):
             for m in range( n+1, len(coords) ):
                 if ( boundaryType == "PBC" ):
-                    dR = np.array([ (Lmax[d]-Lmin[d])%(coords[n,d+1] - coords[m,d+1]) for d in range(dimensions) ])
+                    #dR = np.array([ (Lmax[d]-Lmin[d])%(coords[n,d+1] - coords[m,d+1]) for d in range(dimensions) ])
+                    dR = np.zeros(dimensions)
+                    for d in range(dimensions):
+                        diff = (coords[m,d+1] - coords[n,d+1])
+                        if diff > L/2:
+                            dR[d] = L - diff
+                        elif diff <= -L/2:
+                            dR[d] = L + diff
+                        else: 
+                            dR[d] = diff
                 r = np.linalg.norm( dR )
                 V += 4*eps*( (Diam/r)**12 - (Diam/r)**6 )
         return V
@@ -86,7 +103,15 @@ def getVSingleParticle( coords, Lmin, Lmax, ind):
             if ( n != ind ):
                 if ( boundaryType == "PBC" ):
                     #dR = np.array([ coords[m,d+1] % (Lmax[d]-Lmin[d]) - coords[n,d+1] % (Lmax[d]-Lmin[d]) for d in range(dimensions) ])
-                    dR = np.array([ min((Lmax[d]-Lmin[d])-(coords[m,d+1] - coords[n,d+1]),(coords[m,d+1] - coords[n,d+1])) for d in range(dimensions) ])
+                    dR = np.zeros(dimensions)
+                    for d in range(dimensions):
+                        diff = (coords[m,d+1] - coords[n,d+1])
+                        if diff > L/2:
+                            dR[d] = L - diff
+                        elif diff <= -L/2:
+                            dR[d] = L + diff
+                        else: 
+                            dR[d] = diff
                 else:
                     dR = np.array([ coords[n,d+1] - coords[ind,d+1] for d in range(dimensions) ])
                 r = np.linalg.norm( dR )
@@ -101,8 +126,15 @@ def getVSingleParticle( coords, Lmin, Lmax, ind):
         for n in range( len(coords) ):
             if ( n != ind ):
                 if ( boundaryType == "PBC" ):
-                    #dR = np.array([ coords[m,d+1] % (Lmax[d]-Lmin[d]) - coords[n,d+1] % (Lmax[d]-Lmin[d]) for d in range(dimensions) ])
-                    dR = np.array([ min((Lmax[d]-Lmin[d])-(coords[m,d+1] - coords[n,d+1]),(coords[m,d+1] - coords[n,d+1])) for d in range(dimensions) ])
+                    #dR = np.array([ coords[m,d+1] % (Lmax[d]-Lmin[d]) - coords[n,d+1] % (Lmax[d]-Lmin[d]) for d in range(dimensions) ])                    dR = np.zeros(dimensions)
+                    for d in range(dimensions):
+                        diff = (coords[m,d+1] - coords[n,d+1])
+                        if diff > L/2:
+                            dR[d] = L - diff
+                        elif diff <= -L/2:
+                            dR[d] = L + diff
+                        else: 
+                            dR[d] = diff
                 r = np.linalg.norm( dR )
                 V += 4*eps*( (Diam/r)**12 - (Diam/r)**6 )
         return V
