@@ -18,10 +18,13 @@ def getAutoCorrelation(timeseries):
     AUTO_V = emcee.autocorr.function_1d( V )
     tau_V = int( emcee.autocorr.integrated_time(V, c=5, tol=5, quiet=True)[0] )
 
+    AVE_V = np.round( np.average( V[ tau_V::tau_V//2 ] ) ,4)
+
     print ("\t\tCorrelation Time 'tau_V':", tau_V, "of", len(time) )
+    print ("\t\tAverage V:\t\t", AVE_V)
 
     open("Correlation_Time_V.dat","w").write(str(tau_V)+"\n")
-    #np.savetxt("Correlation_Time_V.dat", tau_V )
+    open("Average_V.dat","w").write(str(AVE_V)+"\n")
 
     return tau_V, np.array([ time, AUTO_V ]).T
 
