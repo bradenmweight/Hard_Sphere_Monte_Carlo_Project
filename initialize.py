@@ -1,9 +1,19 @@
 import numpy as np
-import matplotlib.pyplot as plt
+
 import Parameters
 
-def initParticles( NParticles=Parameters.Parameters.NParticles, latticeType=Parameters.Parameters.latticeType, 
-        dimensions=Parameters.Parameters.dimensions, latticeLength=Parameters.Parameters.latticeLength ):
+def getDists(coords):
+    distx = np.subtract.outer(coords[:,1],coords[:,1])
+    disty = np.subtract.outer(coords[:,2],coords[:,2])
+    distz = np.subtract.outer(coords[:,3],coords[:,3])
+
+    distr = np.sqrt( distx**2 + disty**2 + distz**2 )
+    np.savetxt("Initial_Dists.dat", distr)
+
+    print ("Min Distance:", distr[0,1] )
+    print ("Box Size:", Parameters.Parameters.latticeLength)
+    
+def initParticles_old(  ):
     """
     Initialize particles according to specified lattice arrangement and size.
 
@@ -17,95 +27,179 @@ def initParticles( NParticles=Parameters.Parameters.NParticles, latticeType=Para
     coords:         nd.array() -- shape = NParticles x 4 = Type, x,y,z
 
     """
+    
+    # Simple Cubic Lattice
+    assert ( latticeType == "SC" and dimensions != 1 ), "Only 2D and 3D SC lattice is currently implemented."
+    
     L = latticeLength
     radius = Parameters.Parameters.particleDiameter / 2
+    V = L ** dimensions
 
     coords = []
-    if(latticeType=="SC"):
-        if ( dimensions == 2 ):
-            # Get important properties
-            L12 = L / NParticles ** (1/2)
-            for i in np.arange( 0, L, L12 ):
-                for j in np.arange( 0, L, L12 ):
-                    coords.append([ 1,i,j ])
-            n = len(coords) / L ** 2 # Particle density
-            phi = len(coords) * np.pi * radius**2 / L**2 # Volume of particles / Volume of box
-        
-        elif ( dimensions == 3 ):
-         # Get important properties
-            L13 = L / NParticles ** (1/3)
-            for i in np.arange( 0, L, L13 ):
-                for j in np.arange( 0, L, L13 ):
-                    for k in np.arange( 0, L, L13 ):
-                        coords.append([ 1,i,j,k ])
-            for i in np.arange( 0, L-L13, L13 ):
-                for j in np.arange( 0, L-L13, L13 ):
-                    for k in np.arange( 0, L-L13, L13 ):
-                        coords.append([ 1,i+L13/2,j+L13/2,k+L13/2 ])
-            n = len(coords) / L ** 3 # Particle density
-            phi = len(coords) * (4/3) * np.pi * radius**3 / L**3
-        coords = np.array(coords)
-    elif(latticeType=="BCC"):
-        L13 = L / NParticles ** (1/3)
-        for i in np.arange( 0, L, L13 ): #edge atoms
-            for j in np.arange( 0, L, L13 ):
-                for k in np.arange( 0, L, L13 ):
-                    coords.append([ 1,i,j,k ])
-        for i in np.arange( 0, L-L13, L13 ): #center atoms
-            for j in np.arange( 0, L-L13, L13 ):
-                for k in np.arange( 0, L-L13, L13 ):
-                    coords.append([ 1,i+L13/2,j+L13/2,k+L13/2 ])
-        coords = np.array(coords)
-        n = len(coords) / L ** 3 # Particle density
-        phi = len(coords) * (4/3) * np.pi * radius**3 / L**3
-    elif(latticeType=="FCC"):
-        # Get important properties
-        L13 = L / NParticles ** (1/3)
-        for i in np.arange( 0, L, L13 ): #lattice edges atoms
-            for j in np.arange( 0, L, L13 ):
-                for k in np.arange( 0, L, L13 ):
-                    coords.append([ 1,i,j,k ])
-        for i in np.arange( 0, L-L13/2, L13 ): #top bottom atoms
-            for j in np.arange( 0, L-L13/2, L13 ):
-                for k in np.arange( 0, L, L13 ):
-                    #coords.append([ 1,i*L13+L13/2,j*L13+L13/2,k*L13+L13/2 ])
-                    coords.append([ 1,i+L13/2,j+L13/2,k ])
-        for i in np.arange( 0, L, L13 ): #front rear atoms
-            for j in np.arange( 0, L-L13/2, L13 ):
-                for k in np.arange( 0, L-L13/2, L13 ):
-                    #coords.append([ 1,i*L13+L13/2,j*L13+L13/2,k*L13+L13/2 ])
-                    coords.append([ 1,i,j+L13/2,k +L13/2])
-        for i in np.arange( 0, L-L13/2, L13 ): #left right atoms
-            for j in np.arange( 0, L, L13 ):
-                for k in np.arange( 0, L-L13/2, L13 ):
-                    #coords.append([ 1,i*L13+L13/2,j*L13+L13/2,k*L13+L13/2 ])
-                    coords.append([ 1,i+L13/2,j,k +L13/2])
-        for i in np.arange( 0, L-L13, L13/2 ): #center atoms
-            for j in np.arange( 0, L-L13, L13/2 ):
-                for k in np.arange( 0, L-L13, L13/2 ):
-                    #coords.append([ 1,i*L13+L13/2,j*L13+L13/2,k*L13+L13/2 ])
-                    coords.append([ 1,i+L13/2,j+L13/2,k+L13/2 ])
-        n = len(coords) / L ** 3 # Particle density
-        phi = len(coords) * (4/3) * np.pi * radius**3 / L**3
-        coords = np.array(coords)
-     
+    if ( dimensions == 2 ):
+        L12 = L / NParticles ** (1/2)
+        for i in np.arange( 0, L, L12 ):
+            for j in np.arange( 0, L, L12 ):
+                coords.append([ 1,i,j ])
 
-    #print ("The particle density is %5.4f" % (phi) )
+    elif ( dimensions == 3 ):
+        L13 = L / NParticles ** (1/3)
+        sites = np.arange( 0, L, L13 )
+        maxR = np.max( sites )
+        for i in sites:
+            for j in sites:
+                for k in sites:
+                    if ( maxR in [i,j,k] ):
+                        continue
+                    coords.append([ 1,i,j,k ])
+
+    coords = np.array(coords)
+
     np.savetxt("geometry0.xyz", coords)
+
+    
+    if ( dimensions == 3 ):
+        Vs = (4/3) * np.pi * radius**3
+    elif ( dimensions == 2):
+        Vs = np.pi * radius**2
+
+    n =  len(coords) / V # Particle density
+    phi = len(coords) * Vs / V # Volume Fraction
 
     print ("\n\tNumber Density:", n)
     print ("\n\tVolume Fraction:", phi)
 
+    file01 = open("Density_data.dat","w")
+    file01.write("Number_Density n (V^-1)\tVolume_Fraction \phi\n")
+    file01.write("%5.5f\t%5.5f\n" % (n, phi))
+
     #print ("The length of coordinate array is:", len(coords))
     # Define boundary points
-    Lmin = np.array([ np.min(coords[:,d+1]) for d in range(dimensions) ]) - Parameters.Parameters.particleDiameter
-    Lmax = np.array([ np.max(coords[:,d+1]) for d in range(dimensions) ]) + Parameters.Parameters.particleDiameter
+    #Lmin = np.array([ np.min(coords[:,d+1]) for d in range(dimensions) ]) #- Parameters.Parameters.particleDiameter
+    #Lmax = np.array([ np.max(coords[:,d+1]) for d in range(dimensions) ]) #+ Parameters.Parameters.particleDiameter
+    Lmin = np.array([0,0,0])
+    Lmax = np.array([L,L,L])
     print ("Max and Min")
     print (Lmax)
     print (Lmin)
+
+    #getDists(coords)
+
+
+
+
+    return coords, Lmin, Lmax 
+
+def initParticles_fromPHI0():
+    """
+    Initialize particles according to specified lattice arrangement and size.
+
+    OUTPUT:
+    coords:         nd.array() -- shape = NParticles x 4 = Type, x,y,z
+
+    """
+    
+    #L = Parameters.Parameters.latticeLength
+    #V = L ** dimensions
+
+    latticeType = Parameters.Parameters.latticeType
+    dimensions = Parameters.Parameters.dimensions
+    radius = Parameters.Parameters.particleDiameter / 2
+    phi0 = Parameters.Parameters.phi0
+    NParticles = Parameters.Parameters.NParticles
+
+    if ( dimensions == 3 ):
+        Vs = (4/3) * np.pi * radius**3
+        Ns = np.ceil(NParticles ** (1/3))
+    elif ( dimensions == 2):
+        Vs = np.pi * radius**2
+        Ns = np.ceil(NParticles ** (1/2))
+
+    # phi = len(coords) * Vs / V
+    V = NParticles * Vs / phi0
+    L = np.round( V ** (1/3) ,5)
+
+    coords = []
+    if ( dimensions == 2 ):
+        L12 = L / (Ns**2+1) ** (1/2)
+        sites = np.arange( 0, L, L12 )
+        maxR = np.max(sites)
+        for i in sites:
+            for j in sites:
+                if ( maxR in [i,j] ):
+                        continue
+                coords.append([ 1,i,j ])
+
+    elif ( dimensions == 3 ):
+        L13 = L / (Ns**3+1) ** (1/3)
+        if ( latticeType == "SC" ):
+            sites = np.arange( 0, L, L13 )
+            if ( len(sites)**3 == NParticles ):
+                print ("NEED MORE SITES!")
+                exit()
+
+            maxR = np.max(sites)
+            print ("Total Sites:",len(sites)**3)
+            print ("(N,Ns):",NParticles,Ns)
+            for i in sites:
+                for j in sites:
+                    for k in sites:
+                        if ( maxR in [i,j,k] or len(coords) >= NParticles ):
+                            continue
+                        coords.append([ 1,i,j,k ])
+
+        elif ( latticeType == "FCC" ):
+            sites = np.arange( 0, L, L13 )
+            if ( len(sites)**3 == NParticles ):
+                print ("NEED MORE SITES!")
+                exit()
+            maxR = np.max(sites)
+            print ("Total Sites:",len(sites)**3)
+            print ("(N,Ns):",NParticles,Ns)
+            for i in sites:
+                for j in sites:
+                    for k in sites:
+                        if ( maxR in [i,j,k] or len(coords) >= NParticles ):
+                            continue
+                        coords.append([ 1,i,j,k ])
+
+
+ 
+
+
+
+
+    coords = np.array(coords)
+
+    np.savetxt("geometry0.xyz", coords)
+
+    
+    n =  len(coords) / V # Particle density
+    phi = len(coords) * Vs / V # Volume Fraction
+
+    print ("\n\tNumber Density:", n)
+    print ("\n\tVolume Fraction:", phi, phi0)
+
+    file01 = open("Density_data.dat","w")
+    file01.write("Number_Density n (V^-1)\tVolume_Fraction \phi\n")
+    file01.write("%5.5f\t%5.5f\n" % (n, phi))
+
+    #print ("The length of coordinate array is:", len(coords))
+    # Define boundary points
+    #Lmin = np.array([ np.min(coords[:,d+1]) for d in range(dimensions) ]) #- Parameters.Parameters.particleDiameter
+    #Lmax = np.array([ np.max(coords[:,d+1]) for d in range(dimensions) ]) #+ Parameters.Parameters.particleDiameter
+    Lmin = np.array([0,0,0])
+    Lmax = np.array([L,L,L])
+    print ("Max and Min")
+    print (Lmax)
+    print (Lmin)
+
+    #getDists(coords)
+
+
     return coords, Lmin, Lmax 
 
 
 if ( __name__ == "__main__" ):
     initParticles()
-  
+
