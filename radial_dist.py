@@ -1,26 +1,24 @@
 import numpy as np
+import sys
 
 import Parameters
 
 
-def getRDFHist( coords, Lmin, Lmax, NBINS, boundaryType ):
+def getRDFHist( coords, L, NBINS, BINS, boundaryType ):
     """
-    Given a dynamics trajectory, this will return the normalized RDF
+    Return the normalized RDF for a single snapshot.
     """
+
+    dim = Parameters.Parameters.dimensions
     diameter = Parameters.Parameters.particleDiameter
-    boundaryType = Parameters.Parameters.boundaryType
-    
-    L = Lmax[0]-Lmin[0]
-    
-    BINS = np.linspace( 0,(Lmax[0]-Lmin[0])/2,NBINS ) # I have assumed cubic box
-    HIST = np.zeros(( NBINS ))
+
+    gr = np.zeros(( NBINS ))
     for i in range( len(coords) ):
         for j in range( i+1, len(coords) ):
             if ( boundaryType == "PBC" ):
-                #dR = np.array([ coords[i,d+1] % (Lmax[d]-Lmin[d]) - coords[j,d+1] % (Lmax[d]-Lmin[d]) for d in range(dimensions) ])
-                dR = np.zeros(dimensions)
-                for d in range(dimensions):
-                    diff = (coords[i,d+1] - coords[j,d+1])
+                dR = np.zeros(dim)
+                for d in range(dim):
+                    diff = coords[i,d+1] - coords[j,d+1]
                     if diff > L/2:
                         dR[d] = L - diff
                     elif diff <= -L/2:
@@ -28,56 +26,63 @@ def getRDFHist( coords, Lmin, Lmax, NBINS, boundaryType ):
                     else: 
                         dR[d] = diff
             else:
-                dR = np.array([ coords[i,d+1] - coords[j,d+1] for d in range(dimensions) ])
+                dR = np.array([ coords[i,d+1] - coords[j,d+1] for d in range(dim) ])
             r = np.linalg.norm( dR )
             for b in range( NBINS-1 ):
                 if ( BINS[b] < r and r < BINS[b+1] ):
-                    HIST[b] += 1
+                    gr[b] += 1
     
-    # Normalize histogram by spherical shell*dr
-    dr = BINS[1] - BINS[0]
-    dim = Parameters.Parameters.dimensions
+    # Normalize histogram by spherical shell*dr and non-interacting density
 
-    #n = len(coords) / L ** ( 2 * ( dim == 2 ) + 3 * ( dim == 3 ) )
-    for b in range(1,NBINS):
-        Adr = 4 * np.pi * BINS[b] ** 2 * dr * ( dim == 3 ) +  2 * np.pi * BINS[b] * dr * ( dim == 2 )
-        HIST[b] = HIST[b] / Adr
+    for b in range(NBINS-1):
+        #Adr = 4 * np.pi * BINS[b] ** 2 * dr * ( dim == 3 ) +  2 * np.pi * BINS[b] * dr * ( dim == 2 )
+        Adr = (4/3) * np.pi * (BINS[b+1] ** 3 - BINS[b] ** 3) * ( dim == 3 ) +  np.pi * (BINS[b+1] ** 2 - BINS[b] ** 2) * ( dim == 2 )
+        gr[b] /= Adr
 
-    return np.array([ BINS/diameter, HIST ])
+    return gr
 
 if ( __name__ == "__main__" ):
     dimensions = Parameters.Parameters.dimensions
     NSteps = Parameters.Parameters.NSteps
     diameter = Parameters.Parameters.particleDiameter
     boundaryType = Parameters.Parameters.boundaryType
+    #L = Parameters.Parameters.latticeLength
 
-    NAtoms = int( open("dynamics.xyz","r").readlines()[0] )
-    coords = np.loadtxt("dynamics.raw").flatten().reshape((NSteps,NAtoms,dimensions+1))
+    NSteps = 50000//100
 
-    Lmin = np.array([ np.min(coords[0,:,d+1]) for d in range(dimensions) ]) - Parameters.Parameters.particleDiameter
-    Lmax = np.array([ np.max(coords[0,:,d+1]) for d in range(dimensions) ]) + Parameters.Parameters.particleDiameter
+    if ( len(sys.argv) == 2 and len(sys.argv[1].split(".")) < 2 ):
+        name = sys.argv[1]
+        print (f"Reading File: {name}.xyz AND {name}.raw")
+    else:
+        name = "dynamics"
+
+    NAtoms = int( open(f"{name}.xyz","r").readlines()[0] )
+    coords = np.loadtxt(f"{name}.raw").flatten().reshape((NSteps,NAtoms,dimensions+1))
+   
+
+    L = 8.05996  # THIS NEEDS TO BE CHANGED EACH TIME !!!!!!!!!! BE CAREFUL !!!!!!!!!!
+    print ("\n\tBox Size (L):",L)
+
+    dBIN = 0.1
+    BINS = np.arange( 0, L/2, dBIN ) # I have assumed cubic box
+    NBINS = len(BINS)
+    gr = np.zeros(( len(BINS) ))
     
-    print ("\n\tBox Size (L):",Lmax[0]-Lmin[0])
-
-    NBINS = 100
-    BINS = np.linspace( 0,(Lmax[0]-Lmin[0])/2,NBINS ) # I have assumed cubic box
-    HIST = np.zeros(( 2,len(BINS) ))
-    
-    NStart = int(NSteps / 10)
-    NSkip = 50
+    NStart = 1000
+    NSkip = 500
     for step in range( NStart,NSteps ):
         if ( step % NSkip == 0 ):
             print (f"Step: {step} of {NSteps}")
-            coords_curr = coords[step]
-            HIST += getRDFHist( coords_curr, Lmin, Lmax, NBINS, boundaryType )
+            gr += getRDFHist( coords[step], L, NBINS, BINS, boundaryType )
     
-    HIST = HIST / ( (NSteps - NStart) / NSkip )
-    np.savetxt("RDF.dat",HIST.T )
+    NFrames = (NSteps - NStart) / NSkip
+    gr /= NFrames
 
-    Npts = 4096
-    #SSF = np.abs( np.fft.fft( np.append(HIST[1,:-1],np.zeros(( Npts - len(HIST[1,:-1]) ))),norm="ortho") )
-    SSF = np.abs( np.fft.fft(HIST[1,:-1], Npts, norm="ortho") )
-    q = np.fft.fftfreq( Npts ) * 2 * np.pi / (BINS[1]-BINS[0])
-    np.savetxt("SSF.dat", np.array([q,SSF]).T )
-    
-    
+    V = L ** 2 * ( dimensions == 2) + L ** 3 * ( dimensions == 3 )
+    gr *= V/NAtoms**2
+
+    gr *= 2 # This is an ad-hoc correction
+
+    np.savetxt("RDF.dat", np.array([BINS[:-1], gr[:-1]]).T )
+
+
