@@ -19,5 +19,9 @@ def writeCoords(step, coords, geomFile, rawFile):
         outArray = np.array( [ coords[n,j] for j in range(len(coords[0])) ] )
         rawFile.write( "\t".join(map(str,np.round(outArray,5))) + "\n" )
 
+def writeThermo(step, V, potFile):
+
+    # Write potential as a function of time
+    potFile.write( "%5.5e\t%5.5e\n" % (step,V) )
 
 
