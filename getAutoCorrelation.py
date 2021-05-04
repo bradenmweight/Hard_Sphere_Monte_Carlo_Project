@@ -16,17 +16,20 @@ def getAutoCorrelation(timeseries):
     V = timeseries[:,1]
 
     AUTO_V = emcee.autocorr.function_1d( V )
-    tau_V = emcee.autocorr.integrated_time(V, c=5, tol=5, quiet=True)
+    tau_V = int( emcee.autocorr.integrated_time(V, c=5, tol=5, quiet=True)[0] )
 
-    print ("\tCorrelation Time 'tau_V':", int(tau_V[0]), "of", int(len(time)) )
+    print ("\t\tCorrelation Time 'tau_V':", tau_V, "of", len(time) )
 
-    return tau_V[0], np.array([ time, AUTO_V ]).T
+    open("Correlation_Time_V.dat","w").write(str(tau_V)+"\n")
+    #np.savetxt("Correlation_Time_V.dat", tau_V )
+
+    return tau_V, np.array([ time, AUTO_V ]).T
 
 def trim_Data(timeseries, tau_V):
 
-    print ("\tI am slicing the data.")
+    print ("\tI am slicing the data by [tau :: tau / 2]")
 
-    trimmed_data = timeseries[int(tau_V)::int(tau_V/2)]
+    trimmed_data = timeseries[ tau_V:: tau_V//2 ]
 
     return trimmed_data
 
@@ -47,4 +50,4 @@ if ( __name__ == "__main__" ):
     trimmed_data = trim_Data(timeseries, tau_V)
     printResults(trimmed_data, AUTO_V)
 
-    print ("\tHave a nice day! :)\n")
+    print ("\n\tHave a nice day! :)\n")
